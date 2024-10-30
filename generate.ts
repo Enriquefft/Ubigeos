@@ -1,5 +1,4 @@
 // Data extracted from: https://github.com/joseluisq/ubigeos-peru/tree/master
-
 const departamentosData = [
   {
     id_ubigeo: "2534",
@@ -20955,32 +20954,59 @@ const distritosData = {
   ],
 };
 
-const departamentos = {};
+let departamentos_list: string[] = [];
+let provincias_list: string[] = [];
+let distritos_list: string[] = [];
+const ubigeos = {};
 
 // Build the departamentos object
-departamentosData.forEach(departamento => {
+departamentosData.forEach((departamento) => {
+  departamentos_list.push(departamento.nombre_ubigeo);
   const departamentoId = departamento.id_ubigeo;
   const departamentoNombre = departamento.nombre_ubigeo;
-  departamentos[departamentoNombre] = {};
+  ubigeos[departamentoNombre] = {};
 
   const provincias = provinciasData[departamentoId];
   if (provincias) {
-    provincias.forEach(provincia => {
+    provincias.forEach((provincia) => {
       const provinciaId = provincia.id_ubigeo;
       const provinciaNombre = provincia.nombre_ubigeo;
+      provincias_list.push(provinciaNombre);
 
-      departamentos[departamentoNombre][provinciaNombre] = [];
+      ubigeos[departamentoNombre][provinciaNombre] = [];
 
       const distritos = distritosData[provinciaId];
       if (distritos) {
-        distritos.forEach(distrito => {
+        distritos.forEach((distrito) => {
           const distritoNombre = distrito.nombre_ubigeo;
-          departamentos[departamentoNombre][provinciaNombre].push(distritoNombre);
+          distritos_list.push(distritoNombre);
+          ubigeos[departamentoNombre][provinciaNombre].push(distritoNombre);
         });
       }
     });
   }
 });
 
+departamentos_list = [...new Set(departamentos_list)];
+provincias_list = [...new Set(provincias_list)];
+distritos_list = [...new Set(distritos_list)];
+
 // Output the departamentos variable
-Bun.write('ubigeo.ts','export const departamentos = ' + JSON.stringify(departamentos, null, 2) + ';');
+const file = Bun.file("ubigeo.ts");
+const writer = file.writer();
+writer.write(
+  "export const departamentos = " +
+    JSON.stringify(departamentos_list, null, 2) +
+    " as const;\n",
+);
+writer.write(
+  "export const provincias = " +
+    JSON.stringify(provincias_list, null, 2) +
+    " as const;\n",
+);
+writer.write(
+  "export const distritos = " + JSON.stringify(distritos_list, null, 2) + " as const;\n",
+);
+writer.write(
+  "export const ubigeos = " + JSON.stringify(ubigeos, null, 2) + "satisfies Record<typeof departamentos[number], Partial<Record<typeof provincias[number], typeof distritos[number][]>>>;",
+);
