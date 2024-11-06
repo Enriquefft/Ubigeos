@@ -21008,5 +21008,5 @@ writer.write(
   "export const distritos = " + JSON.stringify(distritos_list, null, 2) + " as const;\n",
 );
 writer.write(
-  "export const ubigeos = " + JSON.stringify(ubigeos, null, 2) + "satisfies Record<typeof departamentos[number], Partial<Record<typeof provincias[number], typeof distritos[number][]>>>;",
+  "export const ubigeos: Record<typeof departamentos[number], Partial<Record<typeof provincias[number], typeof distritos[number][]>>> = " + JSON.stringify(ubigeos, null, 2) + ";",
 );
